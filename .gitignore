@@ -1,7 +1,14 @@
 WLU
-epic_env
-gifs
-images
 sandbox
 notes
+
+# data files
+images
+gifs
+
+# Environments
+epic_env
 .env
+
+# Byte-compiled
+__pycache__/
