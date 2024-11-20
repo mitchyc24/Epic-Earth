@@ -7,7 +7,7 @@ from typing import Dict, Any
 class EPIC_Image:
     identifier: str
     caption: str
-    image: str
+    image_name: str
     version: str
     date: datetime
 
@@ -33,7 +33,7 @@ class EPIC_Image:
         return EPIC_Image(
             identifier=data.get('identifier', ''),
             caption=data.get('caption', ''),
-            image=data.get('image', ''),
+            image_name=data.get('image', ''),
             version=data.get('version', ''),
             date=parsed_date,
         )
