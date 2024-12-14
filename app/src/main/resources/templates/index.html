@@ -8,8 +8,10 @@
     <div class="container">
         <h1>EPIC Earth NASA Gif Generator</h1>
         <form action="#" th:action="@{/retrieve-images}" th:object="${dateForm}" method="post">
-            <label for="date">Select Date:</label>
-            <input type="date" id="date" name="date" th:field="*{date}" />
+            <div class="form-group">
+                <label for="date">Select Date:</label>
+                <input type="date" id="date" name="date" th:field="*{date}" />
+            </div>
             <button type="submit">Generate GIF</button>
         </form>
     </div>
