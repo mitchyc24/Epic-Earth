@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Enter Date</title>
+    <title>EPIC Earth NASA Gif Generator</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
 </head>
 <body>
-    <h1>Enter Date to Retrieve Images</h1>
-    <form action="#" th:action="@{/run-python}" th:object="${dateForm}" method="post">
-        <label for="date">Date (YYYY-MM-DD):</label>
-        <input type="text" id="date" name="date" th:field="*{date}" />
-        <button type="submit">Submit</button>
-    </form>
+    <div class="container">
+        <h1>EPIC Earth NASA Gif Generator</h1>
+        <form action="#" th:action="@{/retrieve-images}" th:object="${dateForm}" method="post">
+            <label for="date">Select Date:</label>
+            <input type="date" id="date" name="date" th:field="*{date}" />
+            <button type="submit">Generate GIF</button>
+        </form>
+    </div>
 </body>
 </html>

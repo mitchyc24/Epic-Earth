@@ -1,14 +1,17 @@
 import os
+import sys
 import requests
 import logging
 import sqlite3
+import json
 from EPIC_Image import EPIC_Image
-from datetime import datetime, timedelta
+from datetime import datetime
 from PIL import Image
 from io import BytesIO
 
 
-API_KEY = os.environ.get('NASA_API_KEY')
+# API key for NASA API
+API_KEY = os.getenv('NASA_API_KEY')
 
 # Configure logging
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -67,8 +70,30 @@ def main():
     date = datetime.strptime(args.date, '%Y-%m-%d')
     logger.info(f"Retrieving images for date {date.strftime('%Y-%m-%d')}")
 
+    # Get the images for the date
+    images = get_EPIC_images_on_date(date)
+    if not images:
+        logger.error(f"No images found for date {date.strftime('%Y-%m-%d')}")
+        return
 
-if  __name__ == "__main__":
-    main()
+    # Save images and print metadata
+    image_metadata = []
+    for image in images:
+        image_path = save_image(image.url, image.name, date)
+        metadata = {
+            'name': image.name,
+            'path': image_path,
+            'date': date.strftime('%Y-%m-%d')
+        }
+        image_metadata.append(metadata)
 
+    
+    print(json.dumps(image_metadata))
 
+if __name__ == "__main__":
+    try:
+        main()
+    except Exception as e:
+        logger.error(f"An error occurred: {e}", exc_info=True)
+        sys.stderr.write(f"An error occurred: {e}\n")
+        sys.exit(1)
