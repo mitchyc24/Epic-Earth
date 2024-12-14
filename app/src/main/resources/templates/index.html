@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>EPIC Earth NASA Gif Generator</title>
+    <title>EPIC Earth</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/tiny_earth.png}">
 </head>
 <body>
     <div class="container">
-        <h1>EPIC Earth NASA Gif Generator</h1>
+        <h1>EPIC Earth</h1>
         <form action="#" th:action="@{/retrieve-images}" th:object="${dateForm}" method="post">
             <div class="form-group">
                 <label for="date">Select Date:</label>
