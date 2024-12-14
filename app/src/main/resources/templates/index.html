@@ -14,6 +14,14 @@
             </div>
             <button type="submit">Generate GIF</button>
         </form>
+        <div class="thumbnails">
+            <h2>Thumbnails</h2>
+            <div class="thumbnail-grid">
+                <div th:each="image : ${images}">
+                    <img th:src="${image.url}" th:alt="${image.name}" class="thumbnail"/>
+                </div>
+            </div>
+        </div>
     </div>
 </body>
 </html>
