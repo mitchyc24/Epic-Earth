@@ -25,7 +25,13 @@ public class EpicEarthController {
         model.addAttribute("dateForm", new DateForm());
         return "index";
     }
+
+    @GetMapping("/about")
+    public String about() {
+        return "about";
+    }
 }
+
 
 class DateForm {
     private String date;
