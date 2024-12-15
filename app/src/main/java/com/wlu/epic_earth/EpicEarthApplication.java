@@ -3,14 +3,20 @@ package com.wlu.epic_earth;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import com.wlu.epic_earth.nasa.EpicImageFetcher;
 import com.wlu.epic_earth.nasa.EPICImage;
+
 
 @SpringBootApplication
 public class EpicEarthApplication {
@@ -29,6 +35,14 @@ public class EpicEarthApplication {
 
             // Save metadata to database
             saveImageMetadata(images);
+
+            // Create GIF from images
+            List<String> imagePaths = new ArrayList<>();
+            for (EPICImage image : images) {
+                imagePaths.add(image.getLocalPath());
+            }
+            String outputPath = "data/gifs/" + dateStr + ".gif";
+            createGif(imagePaths, outputPath);
 
             return images;
 
@@ -57,4 +71,39 @@ public class EpicEarthApplication {
             e.printStackTrace();
         }
     }
+
+    private static void createGif(List<String> imagePaths, String outputPath) throws IOException {
+        File outputDir = new File(outputPath).getParentFile();
+        if (!outputDir.exists()) {
+            outputDir.mkdirs();
+        }
+        
+        List<String> command = new ArrayList<>();
+        command.add("python");
+        command.add("python/create_gif.py");
+        command.add(outputPath);
+        command.addAll(imagePaths);
+
+        ProcessBuilder processBuilder = new ProcessBuilder(command);
+        processBuilder.redirectErrorStream(true);
+        Process process = processBuilder.start();
+
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                System.out.println(line);
+            }
+        }
+
+        try {
+            int exitCode = process.waitFor();
+            if (exitCode != 0) {
+                throw new IOException("Python script exited with code " + exitCode);
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Python script was interrupted", e);
+        }
+    }
+
 }
