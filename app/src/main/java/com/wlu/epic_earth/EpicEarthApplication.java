@@ -7,9 +7,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -33,17 +30,6 @@ public class EpicEarthApplication {
             // Fetch images using EpicImageFetcher
             List<EPICImage> images = EpicImageFetcher.getEpicImagesOnDate(date);
 
-            // Save metadata to database
-            saveImageMetadata(images);
-
-            // Create GIF from images
-            List<String> imagePaths = new ArrayList<>();
-            for (EPICImage image : images) {
-                imagePaths.add(image.getLocalPath());
-            }
-            String outputPath = "data/gifs/" + dateStr + ".gif";
-            createGif(imagePaths, outputPath);
-
             return images;
 
         } catch (Exception e) {
@@ -52,32 +38,18 @@ public class EpicEarthApplication {
         }
     }
 
-    private static void saveImageMetadata(List<EPICImage> images) {
-        String url = "jdbc:h2:file:./data/epic-earth";
-        String user = "sa";
-        String password = "password";
-
-        try (Connection conn = DriverManager.getConnection(url, user, password)) {
-            String sql = "MERGE INTO images (name, path, datetime) KEY(name) VALUES (?, ?, ?)";
-            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
-                for (EPICImage image : images) {
-                    pstmt.setString(1, image.getName());
-                    pstmt.setString(2, image.getUrl());
-                    pstmt.setString(3, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(image.getDate()));
-                    pstmt.executeUpdate();
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    private static void createGif(List<String> imagePaths, String outputPath) throws IOException {
+    public static void createGif(List<EPICImage> images, String outputPath) throws IOException {
         File outputDir = new File(outputPath).getParentFile();
         if (!outputDir.exists()) {
             outputDir.mkdirs();
         }
         
+        // Create a list of image paths
+        List<String> imagePaths = new ArrayList<>();
+        for (EPICImage image : images) {
+            imagePaths.add(image.getLocalPath());
+        }
+
         List<String> command = new ArrayList<>();
         command.add("python");
         command.add("python/create_gif.py");
@@ -105,5 +77,6 @@ public class EpicEarthApplication {
             throw new IOException("Python script was interrupted", e);
         }
     }
+
 
 }

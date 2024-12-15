@@ -7,6 +7,10 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -27,6 +31,14 @@ public class EpicImageFetcher {
         String dateString = dateFormat.format(date);
         logger.log(Level.INFO, "Fetching images for date " + dateString);
 
+        // Check the database for images
+        epicImages = getImagesFromDatabase(date);
+        if (!epicImages.isEmpty()) {
+            logger.log(Level.INFO, "Images found in database for date " + dateString);
+            return epicImages;
+        }
+
+        // Fetch images from URL if not available in database
         String urlEndpoint = "https://api.nasa.gov/EPIC/api/natural/date/" + dateString + "?api_key=" + API_KEY;
 
         try {
@@ -53,10 +65,44 @@ public class EpicImageFetcher {
                 epicImages.add(epicImage);
             }
             logger.log(Level.INFO, "Found " + epicImages.size() + " images for date " + dateString);
+
+            // Save images to database
+            saveEPICImages(epicImages);
+
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error fetching images for date " + dateString, e);
         }
         return epicImages;
+    }
+
+    private static List<EPICImage> getImagesFromDatabase(Date date) {
+        List<EPICImage> images = new ArrayList<>();
+        String url = "jdbc:h2:file:./data/epic-earth";
+        String user = "sa";
+        String password = "password";
+        String dateString = new SimpleDateFormat("yyyy-MM-dd").format(date);
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            String sql = "SELECT * FROM images WHERE date = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, dateString);
+                ResultSet rs = pstmt.executeQuery();
+                while (rs.next()) {
+                    String identifier = rs.getString("identifier");
+                    String caption = rs.getString("caption");
+                    String name = rs.getString("name");
+                    String version = rs.getString("version");
+                    Date imageDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs.getString("date"));
+                    String imageUrl = rs.getString("url");
+                    String localPath = rs.getString("localPath");
+                    EPICImage image = new EPICImage(identifier, caption, name, version, imageDate, imageUrl, null, localPath);
+                    images.add(image);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error fetching images from database for date " + dateString, e);
+        }
+        return images;
     }
 
     private static String sendGetRequest(String urlEndpoint) throws IOException {
@@ -91,5 +137,30 @@ public class EpicImageFetcher {
     private static String getLocalImagePath(String name, Date date) {
         String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(date);
         return "data/images/" + dateStr + "/" + name + ".png";
+    }
+
+    private static void saveEPICImages(List<EPICImage> images) {
+        String url = "jdbc:h2:file:./data/epic-earth";
+        String user = "sa";
+        String password = "password";
+
+        try (Connection conn = DriverManager.getConnection(url, user, password)) {
+            String sql = "MERGE INTO IMAGES (identifier, caption, name, version, date, url, localPath) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                for (EPICImage image : images) {
+                    pstmt.setString(1, image.getIdentifier());
+                    pstmt.setString(2, image.getCaption());
+                    pstmt.setString(3, image.getName());
+                    pstmt.setString(4, image.getVersion());
+                    pstmt.setString(5, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(image.getDate()));
+                    pstmt.setString(6, image.getUrl());
+                    pstmt.setString(7, image.getLocalPath());
+                    pstmt.executeUpdate();
+                }
+            }
+            logger.log(Level.INFO, "Saved " + images.size() + " images to database");
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error saving images to database", e);
+        }
     }
 }

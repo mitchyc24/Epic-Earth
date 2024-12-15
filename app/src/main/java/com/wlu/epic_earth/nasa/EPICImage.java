@@ -35,7 +35,6 @@ public class EPICImage {
         this.url = url;
         this.image = image;
         this.localPath = localPath;
-        //Test
     }
 
     public static EPICImage fromJSONObject(JSONObject jsonObject) {
