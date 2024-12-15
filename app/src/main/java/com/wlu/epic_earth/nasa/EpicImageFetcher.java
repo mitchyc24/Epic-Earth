@@ -1,8 +1,10 @@
 package com.wlu.epic_earth.nasa;
 
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -11,8 +13,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
 import javax.imageio.ImageIO;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -34,9 +34,21 @@ public class EpicImageFetcher {
             for (int i = 0; i < data.length(); i++) {
                 JSONObject item = data.getJSONObject(i);
                 String name = item.getString("image");
-                String url = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
-                BufferedImage image = getImage(url);
-                String localPath = saveImage(image, name, date);
+                String localPath = getLocalImagePath(name, date);
+                BufferedImage image;
+
+                // Check if the image exists locally
+                File imageFile = new File(localPath);
+                if (imageFile.exists()) {
+                    logger.log(Level.INFO, "Using local image for " + name);
+                    image = ImageIO.read(imageFile);
+                } else {
+                    logger.log(Level.INFO, "Fetching image from URL for " + name);
+                    String url = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
+                    image = getImage(url);
+                    saveImage(image, name, date);
+                }
+
                 EPICImage epicImage = EPICImage.fromJSONObject(item);
                 epicImages.add(epicImage);
             }
@@ -69,16 +81,15 @@ public class EpicImageFetcher {
         return ImageIO.read(imageUrl);
     }
 
-    private static String saveImage(BufferedImage image, String name, Date date) throws IOException {
+    private static void saveImage(BufferedImage image, String name, Date date) throws IOException {
+        String localPath = getLocalImagePath(name, date);
+        File outputFile = new File(localPath);
+        outputFile.getParentFile().mkdirs(); // Ensure the directory exists
+        ImageIO.write(image, "png", outputFile);
+    }
+
+    private static String getLocalImagePath(String name, Date date) {
         String dateStr = new SimpleDateFormat("yyyy-MM-dd").format(date);
-        String directoryPath = "data/images/" + dateStr;
-        File directory = new File(directoryPath);
-        if (!directory.exists()) {
-            directory.mkdirs();
-        }
-        String filePath = directoryPath + "/" + name + ".png";
-        File file = new File(filePath);
-        ImageIO.write(image, "png", file);
-        return filePath;
+        return "data/images/" + dateStr + "/" + name + ".png";
     }
 }
