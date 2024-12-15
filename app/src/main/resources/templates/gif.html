@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Generated GIF</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/tiny_earth.png}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container">
+        <h1>Generated GIF</h1>
+        <div th:if="${gifPath}">
+            <img th:src="@{${gifPath}}" alt="Generated GIF" class="generated-gif"/>
+        </div>
+    </div>
+</body>
+</html>
