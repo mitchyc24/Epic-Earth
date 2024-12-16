@@ -1,18 +1,17 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>EPIC Earth</title>
+    <title>About EPIC Earth</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container">
-        <h1>EPIC Earth</h1>
-        <form action="/image-gallery" method="get">
-            <input type="date" name="date" required>
-            <button type="submit">Show Images</button>
-        </form>
+        <h1>About EPIC Earth</h1>
+        <p>This project retrieves and displays images from NASA's EPIC (Earth Polychromatic Imaging Camera) API.</p>
+        <p>It allows users to select a date and view images taken on that date.</p>
+        <a href="/" class="button">Back to Home</a>
     </div>
 </body>
 </html>

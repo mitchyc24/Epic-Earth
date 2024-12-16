@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>EPIC Earth Images</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container">
+        <h1>EPIC Earth Images</h1>
+        <div class="thumbnails">
+            <h2>Thumbnails</h2>
+            <div class="thumbnail-grid">
+                <div th:each="image : ${images}">
+                    <img th:src="@{${image.url}}" th:alt="${image.name}" class="thumbnail"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
