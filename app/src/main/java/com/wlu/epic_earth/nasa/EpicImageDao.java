@@ -95,7 +95,7 @@ public class EpicImageDao {
 
     public void saveEpicImages(List<EpicImage> images) {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, imageurl, image, thumbnailUrl) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, imageurl, image, thumbnailUrl) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 for (EpicImage image : images) {
                     pstmt.setString(1, image.getIdentifier());
