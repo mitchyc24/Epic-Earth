@@ -22,6 +22,7 @@ import javax.imageio.ImageIO;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Repository;
+import java.util.stream.Collectors;
 
 @Repository
 public class EpicImageDao {
@@ -37,7 +38,7 @@ public class EpicImageDao {
         String dateString = new SimpleDateFormat("yyyy-MM-dd").format(date);
 
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "SELECT * FROM images WHERE date = ?";
+            String sql = "SELECT * FROM EPICIMAGE WHERE date = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 pstmt.setString(1, dateString);
                 ResultSet rs = pstmt.executeQuery();
@@ -56,12 +57,21 @@ public class EpicImageDao {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error fetching images from database for date " + dateString, e);
         }
+
+        if (images.isEmpty()) {
+            images = fetchImagesFromApi(date);
+            if (!images.isEmpty()) {
+                logger.log(Level.INFO, "Fetched " + images.size() + " images from API for date " + dateString);
+                saveEpicImages(images);
+            }
+        }
+
         return images;
     }
 
-    public void saveImages(List<EpicImage> images) {
+    public void saveEpicImages(List<EpicImage> images) {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "MERGE INTO IMAGES (identifier, caption, name, version, date, url, image) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, url, image) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 for (EpicImage image : images) {
                     pstmt.setString(1, image.getIdentifier());
@@ -76,7 +86,7 @@ public class EpicImageDao {
                     pstmt.executeUpdate();
                 }
             }
-            logger.log(Level.INFO, "Saved " + images.size() + " images to database");
+            logger.log(Level.INFO, "Saved " + images.size() + " EpicImages to database");
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error saving images to database", e);
         }
@@ -108,9 +118,6 @@ public class EpicImageDao {
             }
             logger.log(Level.INFO, "Found " + epicImages.size() + " images for date " + dateString);
 
-            // Save images to database
-            saveImages(epicImages);
-
         } catch (IOException e) {
             logger.log(Level.SEVERE, "Error fetching images for date " + dateString, e);
         }
@@ -137,5 +144,10 @@ public class EpicImageDao {
     private static BufferedImage getImage(String url) throws IOException {
         URL imageUrl = new URL(url);
         return ImageIO.read(imageUrl);
+    }
+
+    public List<BufferedImage> getImagesByDate(Date date) {
+        List<EpicImage> images = getEpicImagesByDate(date);
+        return images.stream().map(EpicImage::getImage).collect(Collectors.toList());
     }
 }

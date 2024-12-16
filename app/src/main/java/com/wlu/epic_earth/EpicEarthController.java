@@ -4,32 +4,29 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.wlu.epic_earth.nasa.EpicImage;
 import com.wlu.epic_earth.nasa.EpicImageDao;
-import com.wlu.epic_earth.nasa.GifDao;
-import com.wlu.epic_earth.nasa.Gif;
-import java.io.IOException;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.stream.Collectors;
+
 import java.text.ParseException;
-import java.awt.image.BufferedImage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 
 @Controller
 public class EpicEarthController {
 
-    @Autowired
-    private EpicImageDao epicImageDao;
+    private static final Logger logger = LoggerFactory.getLogger(EpicEarthController.class);
 
     @Autowired
-    private GifDao gifDao;
+    private EpicImageDao epicImageDao;
 
     @GetMapping("/")
     public String index(Model model) {
@@ -37,64 +34,22 @@ public class EpicEarthController {
         return "index";
     }
 
-    @PostMapping("/gif/{date}")
-    public String gif(@RequestParam("date") String dateStr, RedirectAttributes redirectAttributes, Model model) {
+    
+    @GetMapping("/image-gallery")
+    public String images(@RequestParam(required = false) String date, Model model) {
+        if (date == null) {
+            model.addAttribute("error", "Date parameter is required");
+            return "index";
+        }
         try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = dateFormat.parse(dateStr);
-
-            List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(date);
-            if (epicImages.isEmpty()) {
-                epicImages = epicImageDao.fetchImagesFromApi(date);
-            }
-
-            if (epicImages == null || epicImages.isEmpty()) {
-                redirectAttributes.addFlashAttribute("error", "Failed to retrieve images for date " + dateStr);
-                return "redirect:/";
-            }
-
-            List<BufferedImage> images = epicImages.stream()
-                .map(EpicImage::getImage)
-                .collect(Collectors.toList());
-
-            byte[] gifData = EpicEarthApplication.createGif(images);
-
-            // Save the GIF to the database
-            Gif gif = new Gif(null, dateStr + ".gif", date, gifData);
-            gifDao.saveGif(gif);
-
-            model.addAttribute("gifData", gif.getData());
-            model.addAttribute("date", dateStr);
-            return "gif";
+            Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(parsedDate);
+            logger.info("\n-----------------------------------------\n\nImages: " + epicImages + "--------------------------\n\n\n");
+            model.addAttribute("images", epicImages);
         } catch (ParseException e) {
-            redirectAttributes.addFlashAttribute("error", "Invalid date format: " + dateStr);
-            return "redirect:/";
-        } catch (IOException e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to create gif for date " + dateStr);
-            return "redirect:/";
+            model.addAttribute("error", "Invalid date format");
         }
-    }
-
-    @GetMapping("/gif/{date}")
-    public String getGifByDate(@PathVariable("date") String dateStr, Model model, RedirectAttributes redirectAttributes) {
-        try {
-            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
-            Date date = dateFormat.parse(dateStr);
-
-            Gif gif = gifDao.getGifByDate(date);
-            if (gif == null) {
-                redirectAttributes.addFlashAttribute("error", "No GIF found for date " + dateStr);
-                return "redirect:/";
-            }
-
-            model.addAttribute("gifData", gif.getData());
-            model.addAttribute("date", dateStr);
-            return "gif";
-
-        } catch (Exception e) {
-            redirectAttributes.addFlashAttribute("error", "Failed to retrieve gif for date " + dateStr);
-            return "redirect:/";
-        }
+        return "image-gallery";
     }
 
     @GetMapping("/about")
