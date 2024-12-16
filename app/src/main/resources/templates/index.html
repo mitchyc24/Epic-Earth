@@ -3,27 +3,19 @@
 <head>
     <title>EPIC Earth</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
-    <link rel="icon" type="image/x-icon" th:href="@{/tiny_earth.png}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container">
         <h1>EPIC Earth</h1>
-        <form action="#" th:action="@{/retrieve-images}" th:object="${dateForm}" method="post">
+        <form action="#" th:action="@{/gif/{date}(date=${dateForm.date})}" th:object="${dateForm}" method="post">
             <div class="form-group">
                 <label for="date">Select Date:</label>
                 <input type="date" id="date" name="date" th:field="*{date}" />
             </div>
             <button type="submit">Generate GIF</button>
         </form>
-        <div class="thumbnails">
-            <h2>Thumbnails</h2>
-            <div class="thumbnail-grid">
-                <div th:each="image : ${images}">
-                    <img th:src="@{${image.localPath}}" th:alt="${image.name}" class="thumbnail"/>
-                </div>
-            </div>
-        </div>
     </div>
 </body>
 </html>

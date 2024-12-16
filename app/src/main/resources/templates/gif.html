@@ -1,16 +1,25 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
-    <title>Generated GIF</title>
+    <title>EPIC Earth GIF</title>
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
-    <link rel="icon" type="image/x-icon" th:href="@{/tiny_earth.png}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
 <body>
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container">
-        <h1>Generated GIF</h1>
-        <div th:if="${gifPath}">
-            <img th:src="@{${gifPath}}" alt="Generated GIF" class="generated-gif"/>
+        <h1>EPIC Earth GIF for <span th:text="${date}"></span></h1>
+        <div class="thumbnails">
+            <h2>Thumbnails</h2>
+            <div class="thumbnail-grid">
+                <div th:each="image : ${images}">
+                    <img th:src="@{${image.url}}" th:alt="${image.name}" class="thumbnail"/>
+                </div>
+            </div>
+        </div>
+        <div class="gif-container">
+            <h2>Generated GIF</h2>
+            <img th:src="@{${gifPath}}" alt="Generated GIF" class="gif"/>
         </div>
     </div>
 </body>

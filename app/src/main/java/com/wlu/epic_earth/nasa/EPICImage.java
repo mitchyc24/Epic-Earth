@@ -2,7 +2,6 @@ package com.wlu.epic_earth.nasa;
 
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
-import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -13,9 +12,8 @@ import java.text.ParseException;
 import org.json.JSONObject;
 
 
-public class EPICImage {
-    private static final Logger logger = Logger.getLogger(EPICImage.class.getName());
-    private static final SimpleDateFormat fileDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+public class EpicImage {
+    private static final Logger logger = Logger.getLogger(EpicImage.class.getName());
 
     private String identifier;
     private String caption;
@@ -24,9 +22,12 @@ public class EPICImage {
     private Date date;
     private String url;
     private BufferedImage image;
-    private String localPath;
 
-    public EPICImage(String identifier, String caption, String name, String version, Date date, String url, BufferedImage image, String localPath) {
+    public EpicImage() {
+        this("", "", "", "", new Date(), "", null);
+    }
+
+    public EpicImage(String identifier, String caption, String name, String version, Date date, String url, BufferedImage image) {
         this.identifier = identifier;
         this.caption = caption;
         this.name = name;
@@ -34,10 +35,14 @@ public class EPICImage {
         this.date = date;
         this.url = url;
         this.image = image;
-        this.localPath = localPath;
     }
 
-    public static EPICImage fromJSONObject(JSONObject jsonObject) {
+    public EpicImage(String identifier, String caption, String name, String version, Date date, String url){
+        this(identifier, caption, name, version, date, url, null);
+    }
+
+
+    public static EpicImage fromJSONObject(JSONObject jsonObject) {
         String identifier = jsonObject.optString("identifier", "");
         String caption = jsonObject.optString("caption", "");
         String name = jsonObject.optString("image", "");
@@ -50,39 +55,19 @@ public class EPICImage {
             date = new Date();
         }
         String url = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
-        BufferedImage image = getImage(name, date);
-        String localPath = String.format("data/images/%s/%s.png", fileDateFormat.format(date), name);
+        BufferedImage image = fetchImage(url);
 
-        return new EPICImage(identifier, caption, name, version, date, url, image, localPath);
+        return new EpicImage(identifier, caption, name, version, date, url, image);
     }
 
-    private static BufferedImage getImage(String name, Date date) {
-        String dateStr = fileDateFormat.format(date);
-        String localImagePath = String.format("data/images/%s/%s.png", dateStr, name);
-        logger.log(Level.INFO, "Local image path: {0}", localImagePath);
-
-        File localImageFile = new File(localImagePath);
-        if (localImageFile.exists()) {
-            try {
-                BufferedImage image = ImageIO.read(localImageFile);
-                logger.log(Level.INFO, "Loaded image {0} from cache.", name);
-                return image;
-            } catch (IOException e) {
-                logger.log(Level.SEVERE, "Failed to load image from cache.", e);
-            }
-        }
-
-        logger.log(Level.INFO, "Image {0} not found in cache, fetching from NASA API.", name);
-        String urlEndpoint = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
-
+    private static BufferedImage fetchImage(String urlStr) {
         try {
-            URL url = new URL(urlEndpoint);
+            URL url = new URL(urlStr);
             BufferedImage image = ImageIO.read(url);
-            logger.log(Level.INFO, "Downloaded image {0}", name);
-            Utils.saveImage(image, localImagePath);
+            logger.log(Level.INFO, "Downloaded image from {0}", urlStr);
             return image;
         } catch (IOException e) {
-            logger.log(Level.SEVERE, "Error fetching image {0}: {1}", new Object[]{name, e});
+            logger.log(Level.SEVERE, "Error fetching image {0}: {1}", new Object[]{urlStr, e});
             return null;
         }
     }
@@ -96,6 +81,35 @@ public class EPICImage {
         logger.log(Level.INFO, "Extracted date from image name: {0}", dateTimePart);
         return formatter.parse(dateTimePart);
     
+    }
+
+    // Setters
+    public void setIdentifier(String identifier) {
+        this.identifier = identifier;
+    }
+
+    public void setCaption(String caption) {
+        this.caption = caption;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
+    }
+
+    public void setDate(Date date) {
+        this.date = date;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setImage(BufferedImage image) {
+        this.image = image;
     }
 
     // Getters
@@ -127,11 +141,4 @@ public class EPICImage {
         return date;
     }
 
-    public String getLocalPath() {
-        return localPath;
-    }
-
-    public void setLocalPath(String localPath) {
-        this.localPath = localPath;
-    }
 }
