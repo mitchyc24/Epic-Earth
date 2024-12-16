@@ -10,10 +10,10 @@
     <div class="container">
         <h1>EPIC Earth Gif</h1>
         <div class="thumbnails">
-            <h2>Thumbnails</h2>
+            <h2>Images for the GIF</h2>
             <div class="thumbnail-grid">
                 <div th:each="image : ${images}">
-                    <img th:src="@{${image.url}}" th:alt="${image.name}" class="thumbnail"/>
+                    <img th:src="@{'/image/' + ${image.identifier}}" th:alt="${image.name}" class="thumbnail"/>
                 </div>
             </div>
         </div>
