@@ -70,6 +70,29 @@ public class EpicImageDao {
         return images;
     }
 
+    public EpicImage findByIdentifier(String identifier){
+        try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
+            String sql = "SELECT * FROM EPICIMAGE WHERE identifier = ?";
+            try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
+                pstmt.setString(1, identifier);
+                ResultSet rs = pstmt.executeQuery();
+                if (rs.next()) {
+                    String caption = rs.getString("caption");
+                    String name = rs.getString("name");
+                    String version = rs.getString("version");
+                    Date imageDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs.getString("date"));
+                    String imageUrl = rs.getString("imageurl");
+                    BufferedImage bufferedImage = ImageIO.read(rs.getBinaryStream("image"));
+                    String thumbnailUrl = rs.getString("thumbnailUrl");
+                    return new EpicImage(identifier, caption, name, version, imageDate, imageUrl, bufferedImage, thumbnailUrl);
+                }
+            }
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error fetching image from database", e);
+        }
+        return null;
+    }
+
     public void saveEpicImages(List<EpicImage> images) {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, imageurl, image, thumbnailUrl) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
