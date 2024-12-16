@@ -20,25 +20,27 @@ public class EpicImage {
     private String name;
     private String version;
     private Date date;
-    private String url;
+    private String imageUrl;
     private BufferedImage image;
+    private String thumbnailUrl;
 
     public EpicImage() {
-        this("", "", "", "", new Date(), "", null);
+        this("", "", "", "", new Date(), "", null, "");
     }
 
-    public EpicImage(String identifier, String caption, String name, String version, Date date, String url, BufferedImage image) {
+    public EpicImage(String identifier, String caption, String name, String version, Date date, String imageUrl, BufferedImage image, String thumbnailUrl) {
         this.identifier = identifier;
         this.caption = caption;
         this.name = name;
         this.version = version;
         this.date = date;
-        this.url = url;
+        this.imageUrl = imageUrl;
         this.image = image;
+        this.thumbnailUrl = thumbnailUrl;
     }
 
-    public EpicImage(String identifier, String caption, String name, String version, Date date, String url){
-        this(identifier, caption, name, version, date, url, null);
+    public EpicImage(String identifier, String caption, String name, String version, Date date, String imageUrl, String thumbnailUrl) {
+        this(identifier, caption, name, version, date, imageUrl, null, thumbnailUrl);
     }
 
 
@@ -54,10 +56,11 @@ public class EpicImage {
             logger.log(Level.SEVERE, "Failed to parse date.", e);
             date = new Date();
         }
-        String url = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
-        BufferedImage image = fetchImage(url);
+        String imageUrl = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
+        BufferedImage image = fetchImage(imageUrl);
+        String thumbnailurl = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/thumbs/%2$s.jpg", date, name);
 
-        return new EpicImage(identifier, caption, name, version, date, url, image);
+        return new EpicImage(identifier, caption, name, version, date, imageUrl, image, thumbnailurl);
     }
 
     private static BufferedImage fetchImage(String urlStr) {
@@ -104,12 +107,16 @@ public class EpicImage {
         this.date = date;
     }
 
-    public void setUrl(String url) {
-        this.url = url;
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 
     public void setImage(BufferedImage image) {
         this.image = image;
+    }
+
+    public void setThumbnailUrl(String thumbnailUrl) {
+        this.thumbnailUrl = thumbnailUrl;
     }
 
     // Getters
@@ -133,12 +140,16 @@ public class EpicImage {
         return identifier;
     }
 
-    public String getUrl() {
-        return url;
+    public String getImageUrl() {
+        return imageUrl;
     }
 
     public Date getDate() {
         return date;
+    }
+
+    public String getThumbnailUrl() {
+        return thumbnailUrl;
     }
 
 }

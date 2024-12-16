@@ -13,7 +13,7 @@
             <h2>Thumbnails</h2>
             <div class="thumbnail-grid">
                 <div th:each="image : ${images}">
-                    <img th:src="@{${image.url}}" th:alt="${image.name}" class="thumbnail"/>
+                    <img th:src="@{${image.thumbnailUrl}}" th:alt="${image.name}" class="thumbnail"/>
                 </div>
             </div>
         </div>

@@ -44,7 +44,7 @@ public class EpicEarthController {
         try {
             Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
             List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(parsedDate);
-            logger.info("\n-----------------------------------------\n\nImages: " + epicImages + "--------------------------\n\n\n");
+            logger.info("\n-----------------------------------------\n\nIMAGES: " + epicImages + "\n--------------------------\n\n\n");
             model.addAttribute("images", epicImages);
         } catch (ParseException e) {
             model.addAttribute("error", "Invalid date format");

@@ -48,9 +48,10 @@ public class EpicImageDao {
                     String name = rs.getString("name");
                     String version = rs.getString("version");
                     Date imageDate = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(rs.getString("date"));
-                    String imageUrl = rs.getString("url");
+                    String imageUrl = rs.getString("imageurl");
                     BufferedImage bufferedImage = ImageIO.read(rs.getBinaryStream("image"));
-                    EpicImage image = new EpicImage(identifier, caption, name, version, imageDate, imageUrl, bufferedImage);
+                    String thumbnailUrl = rs.getString("thumbnailUrl");
+                    EpicImage image = new EpicImage(identifier, caption, name, version, imageDate, imageUrl, bufferedImage, thumbnailUrl);
                     images.add(image);
                 }
             }
@@ -71,7 +72,7 @@ public class EpicImageDao {
 
     public void saveEpicImages(List<EpicImage> images) {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
-            String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, url, image) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
+            String sql = "MERGE INTO EPICIMAGE (identifier, caption, name, version, date, imageurl, image, thumbnailUrl) KEY(identifier) VALUES (?, ?, ?, ?, ?, ?, ?)";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
                 for (EpicImage image : images) {
                     pstmt.setString(1, image.getIdentifier());
@@ -79,10 +80,11 @@ public class EpicImageDao {
                     pstmt.setString(3, image.getName());
                     pstmt.setString(4, image.getVersion());
                     pstmt.setString(5, new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(image.getDate()));
-                    pstmt.setString(6, image.getUrl());
+                    pstmt.setString(6, image.getImageUrl());
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
                     ImageIO.write(image.getImage(), "png", baos);
                     pstmt.setBinaryStream(7, new ByteArrayInputStream(baos.toByteArray()));
+                    pstmt.setString(8, image.getThumbnailUrl());
                     pstmt.executeUpdate();
                 }
             }
@@ -111,9 +113,9 @@ public class EpicImageDao {
                 epicImage.setName(name);
                 epicImage.setVersion(item.getString("version"));
                 epicImage.setDate(date);
-                epicImage.setUrl(url);
+                epicImage.setImageUrl(url);
                 epicImage.setImage(image);
-
+                epicImage.setThumbnailUrl(String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/thumbs/%2$s.jpg", date, name));
                 epicImages.add(epicImage);
             }
             logger.log(Level.INFO, "Found " + epicImages.size() + " images for date " + dateString);
