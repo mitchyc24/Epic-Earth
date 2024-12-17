@@ -59,6 +59,3 @@ To create an online service that generates animated **GIFs** of Earth using imag
 - **Security**: Implement secure access to the NASA API and secure database storage.
 - **Performance**: Use asynchronous processing for image interpolation and GIF generation.
 - **Reliability**: Build retry mechanisms in data retrieval and processing.
-
----
-*This document outlines the design for a project that will leverage various enterprise computing principles to create a visually engaging, interactive service.*

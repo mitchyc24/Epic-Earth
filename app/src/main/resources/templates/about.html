@@ -10,11 +10,11 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container">
         <h1>About EPIC Earth</h1>
-        <p>This project retrieves and displays images from NASA's EPIC (Earth Polychromatic Imaging Camera) API.</p>
+        <p>This web application retrieves and displays images from NASA's EPIC (Earth Polychromatic Imaging Camera) API.</p>
         <p>It allows users to select a date and view images taken on that date.</p>
         <p>The application also creates GIFs from high-resolution images provided by the NASA API.</p>
-        <p>Author: Mitchell Carroll</p>
-        <p>Date: December 2024</p>
+        <p>It was developed as a project for the CP-630-OC1 - Enterprise Computing course @ Wilfrid Laurier University</p>
+        <p>Developer: Mitchell Carroll</p>
         <div th:if="${gifUrl != null}">
             <img th:src="${gifUrl}" alt="EPIC Earth GIF" class="small-gif"/>
         </div>

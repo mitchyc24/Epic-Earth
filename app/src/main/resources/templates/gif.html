@@ -11,7 +11,7 @@
     <div class="container">
         <h1>EPIC Earth GIF</h1>
         <div th:if="${gif != null}">
-            <h2>EPIC Earth on <span th:text="${date}"></span></h2>
+            <h2>Earth on <span th:text="${date}"></span></h2>
             <img th:src="@{'/gif/' + ${date}}" alt="EPIC Earth GIF" class="generated-gif"/>
         </div>
         <div th:if="${gif == null}">
