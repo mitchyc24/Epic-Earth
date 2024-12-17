@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>EPIC Earth GIF</title>
+    <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
+    <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
+</head>
+<body>
+    <div th:replace="~{fragments/navbar :: navbar}"></div>
+    <div class="container">
+        <h1>EPIC Earth GIF</h1>
+        <div th:if="${gif != null}">
+            <h2>EPIC Earth on <span th:text="${date}"></span></h2>
+            <img th:src="@{'/gif/' + ${date}}" alt="EPIC Earth GIF"/>
+        </div>
+        <div th:if="${gif == null}">
+            <p>No GIF available for the selected date.</p>
+        </div>
+    </div>
+</body>
+</html>
