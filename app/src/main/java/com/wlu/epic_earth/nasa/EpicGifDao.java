@@ -19,9 +19,9 @@ import java.io.ByteArrayOutputStream;
 @Repository
 public class EpicGifDao {
     private static final Logger logger = Logger.getLogger(EpicGifDao.class.getName());
-    private static final String DB_URL = "jdbc:h2:file:./data/epic-earth";
-    private static final String DB_USER = "sa";
-    private static final String DB_PASSWORD = "password";
+    private static final String DB_URL = System.getProperty("DB_URL");
+    private static final String DB_USER = System.getProperty("DB_USER");
+    private static final String DB_PASSWORD = System.getProperty("DB_PASS");
 
     @Autowired
     private EpicImageDao epicImageDao;

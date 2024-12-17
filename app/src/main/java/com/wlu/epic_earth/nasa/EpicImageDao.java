@@ -27,9 +27,9 @@ import java.util.stream.Collectors;
 @Repository
 public class EpicImageDao {
     private static final Logger logger = Logger.getLogger(EpicImageDao.class.getName());
-    private static final String DB_URL = "jdbc:h2:file:./data/epic-earth";
-    private static final String DB_USER = "sa";
-    private static final String DB_PASSWORD = "password";
+    private static final String DB_URL = System.getProperty("DB_URL");
+    private static final String DB_USER = System.getProperty("DB_USER");
+    private static final String DB_PASSWORD = System.getProperty("DB_PASS");
     private static final String API_KEY = System.getenv("NASA_API_KEY");
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyyMMdd");
 
@@ -37,6 +37,7 @@ public class EpicImageDao {
         List<EpicImage> images = new ArrayList<>();
         String dateString = new SimpleDateFormat("yyyy-MM-dd").format(date);
 
+        logger.log(Level.INFO, "Fetching images from DB for date " + dateString + "and user " + DB_USER);
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
             String sql = "SELECT * FROM EPICIMAGE WHERE date = ?";
             try (PreparedStatement pstmt = conn.prepareStatement(sql)) {
@@ -56,7 +57,7 @@ public class EpicImageDao {
                 }
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error fetching images from database for date " + dateString, e);
+            logger.log(Level.SEVERE, "Error fetching images from DB for date " + dateString, e);
         }
 
         if (images.isEmpty()) {
@@ -88,7 +89,7 @@ public class EpicImageDao {
                 }
             }
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error fetching image from database", e);
+            logger.log(Level.SEVERE, "Error fetching image from DB", e);
         }
         return null;
     }
@@ -111,35 +112,50 @@ public class EpicImageDao {
                     pstmt.executeUpdate();
                 }
             }
-            logger.log(Level.INFO, "Saved " + images.size() + " EpicImages to database");
+            logger.log(Level.INFO, "Saved " + images.size() + " EpicImages to DB");
         } catch (Exception e) {
-            logger.log(Level.SEVERE, "Error saving images to database", e);
+            logger.log(Level.SEVERE, "Error saving images to DB", e);
         }
     }
 
     public List<EpicImage> fetchImagesFromApi(Date date) {
         List<EpicImage> epicImages = new ArrayList<>();
         String dateString = dateFormat.format(date);
-        String urlEndpoint = "https://api.nasa.gov/EPIC/api/natural/date/" + dateString + "?api_key=" + API_KEY;
+        String apiUrl = "https://api.nasa.gov/EPIC/api/natural/date/" + dateString + "?api_key=" + API_KEY;
 
         try {
-            JSONArray data = new JSONArray(sendGetRequest(urlEndpoint));
-            for (int i = 0; i < data.length(); i++) {
-                JSONObject item = data.getJSONObject(i);
-                String name = item.getString("image");
-                String url = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
-                BufferedImage image = getImage(url);
+            URL url = new URL(apiUrl);
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("GET");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
 
-                EpicImage epicImage = new EpicImage();
-                epicImage.setIdentifier(item.getString("identifier"));
-                epicImage.setCaption(item.getString("caption"));
-                epicImage.setName(name);
-                epicImage.setVersion(item.getString("version"));
-                epicImage.setDate(date);
-                epicImage.setImageUrl(url);
-                epicImage.setImage(image);
-                epicImage.setThumbnailUrl(String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/thumbs/%2$s.jpg", date, name));
-                epicImages.add(epicImage);
+            int responseCode = conn.getResponseCode();
+            if (responseCode == 200) {
+                BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                String response = in.lines().collect(Collectors.joining());
+                in.close();
+
+                JSONArray data = new JSONArray(response);
+                for (int i = 0; i < data.length(); i++) {
+                    JSONObject item = data.getJSONObject(i);
+                    String name = item.getString("image");
+                    String imageUrl = String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/png/%2$s.png", date, name);
+                    BufferedImage image = getImage(imageUrl);
+
+                    EpicImage epicImage = new EpicImage();
+                    epicImage.setIdentifier(item.getString("identifier"));
+                    epicImage.setCaption(item.getString("caption"));
+                    epicImage.setName(name);
+                    epicImage.setVersion(item.getString("version"));
+                    epicImage.setDate(date);
+                    epicImage.setImageUrl(imageUrl);
+                    epicImage.setImage(image);
+                    epicImage.setThumbnailUrl(String.format("https://epic.gsfc.nasa.gov/archive/natural/%1$tY/%1$tm/%1$td/thumbs/%2$s.jpg", date, name));
+                    epicImages.add(epicImage);
+                }
+            } else {
+                logger.log(Level.SEVERE, "Error fetching images from NASA API: HTTP response code " + responseCode);
             }
             logger.log(Level.INFO, "Found " + epicImages.size() + " images for date " + dateString);
 
@@ -149,26 +165,25 @@ public class EpicImageDao {
         return epicImages;
     }
 
-    private static String sendGetRequest(String urlEndpoint) throws IOException {
-        URL url = new URL(urlEndpoint);
-        HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-        connection.setRequestMethod("GET");
-
-        try (BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()))) {
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                response.append(line);
-            }
-            return response.toString();
-        } finally {
-            connection.disconnect();
+    private BufferedImage getImage(String imageUrl) throws IOException {
+        logger.log(Level.INFO, "Fetching image from URL: " + imageUrl);
+        URL url = new URL(imageUrl);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        conn.setRequestProperty("Accept", "image/webp,image/apng,image/*,*/*;q=0.8");
+        conn.setRequestProperty("Accept-Language", "en-US,en;q=0.9");
+        conn.setRequestProperty("Connection", "keep-alive");
+    
+        int responseCode = conn.getResponseCode();
+        String responseMessage = conn.getResponseMessage();
+        logger.log(Level.INFO, "HTTP response code: " + responseCode + ", message: " + responseMessage);
+        if (responseCode == 200) {
+            return ImageIO.read(conn.getInputStream());
+        } else {
+            logger.log(Level.SEVERE, "Failed to fetch image: HTTP response code " + responseCode + ", message: " + responseMessage);
+            throw new IOException("Failed to fetch image: HTTP response code " + responseCode + ", message: " + responseMessage);
         }
-    }
-
-    private static BufferedImage getImage(String url) throws IOException {
-        URL imageUrl = new URL(url);
-        return ImageIO.read(imageUrl);
     }
 
     public List<BufferedImage> getImagesByDate(Date date) {

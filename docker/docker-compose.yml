@@ -5,3 +5,13 @@ services:
       dockerfile: docker/Dockerfile
     ports:
       - "8080:8080"
+    environment:
+      - NASA_API_KEY=${NASA_API_KEY}
+      - DB_HOST=${DB_HOST}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASS}
+    volumes:
+      - epic-earth-data:/app/data
+
+volumes:
+  epic-earth-data:
