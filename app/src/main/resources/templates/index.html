@@ -10,14 +10,22 @@
     <div th:replace="~{fragments/navbar :: navbar}"></div>
     <div class="container">
         <h1>EPIC Earth</h1>
-        <form action="/image-gallery" method="get">
-            <input type="date" name="date" required>
-            <button type="submit">Show Images</button>
-        </form>
-        <form action="/gif" method="get" style="margin-top: 10px;">
-            <input type="date" name="date" required>
-            <button type="submit">Generate GIF</button>
-        </form>
+        <div class="forms-container">
+            <form action="/image-gallery" method="get">
+                <div class="form-group">
+                    <label for="date-gallery">Select a Date for Images</label>
+                    <input type="date" name="date" id="date-gallery" required>
+                    <button type="submit">Show Images</button>
+                </div>
+            </form>
+            <form action="/gif" method="get">
+                <div class="form-group">
+                    <label for="date-gif">Select a Date for GIF</label>
+                    <input type="date" name="date" id="date-gif" required>
+                    <button type="submit">Generate GIF</button>
+                </div>
+            </form>
+        </div>
     </div>
 </body>
 </html>

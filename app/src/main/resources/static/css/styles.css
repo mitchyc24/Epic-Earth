@@ -1,6 +1,7 @@
 body {
     font-family: Arial, sans-serif;
-    background-color: #f4f4f9;
+    background-color: #121212;
+    color: #e0e0e0;
     margin: 0;
     padding: 0;
     display: flex;
@@ -11,7 +12,7 @@ body {
 
 .navbar {
     width: 100%;
-    background-color: rgb(54, 112, 200);
+    background-color: #1f1f1f;
     overflow: hidden;
     position: fixed;
     top: 0;
@@ -22,22 +23,22 @@ body {
 .navbar .nav-link {
     float: left;
     display: block;
-    color: white;
+    color: #e0e0e0;
     text-align: center;
     padding: 14px 20px;
     text-decoration: none;
 }
 
 .navbar .nav-link:hover {
-    background-color: #ddd;
-    color: black;
+    background-color: #333333;
+    color: #ffffff;
 }
 
 .container {
-    background-color: #fff;
+    background-color: #1e1e1e;
     padding: 20px;
     border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
     text-align: center;
     margin-top: 60px;
     width: 90%;
@@ -45,9 +46,17 @@ body {
 }
 
 h1 {
-    color: #333;
+    color: #ffffff;
     margin-bottom: 20px;
     font-size: 36px;
+}
+
+.forms-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    justify-items: center;
+    margin-top: 20px;
 }
 
 form {
@@ -58,34 +67,25 @@ form {
 
 .form-group {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: start;
     margin-bottom: 20px;
 }
 
 label {
     font-size: 18px;
-    margin-right: 10px;
+    margin-bottom: 10px;
+    color: #e0e0e0;
 }
 
 input[type="date"] {
     padding: 10px;
     font-size: 16px;
-    border: 1px solid #ccc;
+    border: 1px solid #555555;
+    background-color: #2b2b2b;
+    color: #e0e0e0;
     border-radius: 4px;
-}
-
-button {
-    padding: 10px 20px;
-    font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
+    margin-bottom: 10px;
 }
 
 .thumbnails {
@@ -103,7 +103,7 @@ button:hover {
     height: 150px;
     object-fit: cover;
     margin: 10px;
-    border: 1px solid #ccc;
+    border: 1px solid #555555;
     border-radius: 4px;
 }
 
@@ -113,20 +113,27 @@ button:hover {
     height: auto;
 }
 
-.button {
+.small-gif {
+    width: 100px;
+    height: 100px;
+    box-shadow: 0 0 15px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+button, .button {
     display: inline-block;
     padding: 10px 20px;
     font-size: 16px;
-    color: #fff;
-    background-color: #007bff;
+    color: #ffffff;
+    background-color: #001f41;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     text-decoration: none;
 }
 
-.button:hover {
-    background-color: #0056b3;
+button:hover, .button:hover {
+    background-color: #0d2c4d;
 }
 
 @media (max-width: 600px) {
@@ -148,5 +155,9 @@ button:hover {
     .thumbnail {
         width: 100px;
         height: 100px;
+    }
+
+    .forms-container {
+        grid-template-columns: 1fr;
     }
 }

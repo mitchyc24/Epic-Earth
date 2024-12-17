@@ -56,6 +56,7 @@ public class EpicEarthController {
             List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(parsedDate);
             logger.info("Found " + epicImages.size() + " images for date " + date);
             model.addAttribute("images", epicImages);
+            model.addAttribute("date", parsedDate);
         } catch (ParseException e) {
             model.addAttribute("error", "Invalid date format");
         }
@@ -121,7 +122,9 @@ public class EpicEarthController {
     }
 
     @GetMapping("/about")
-    public String about() {
+    public String about(Model model) {
+        String gifDate = "2021-02-11";
+        model.addAttribute("gifUrl", "/gif/" + gifDate);
         return "about";
     }
 }
