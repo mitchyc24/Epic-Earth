@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <title>EPIC Earth GIF</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" th:href="@{/css/styles.css}">
     <link rel="icon" type="image/x-icon" th:href="@{/favicon.ico}">
 </head>
@@ -11,7 +12,7 @@
         <h1>EPIC Earth GIF</h1>
         <div th:if="${gif != null}">
             <h2>EPIC Earth on <span th:text="${date}"></span></h2>
-            <img th:src="@{'/gif/' + ${date}}" alt="EPIC Earth GIF"/>
+            <img th:src="@{'/gif/' + ${date}}" alt="EPIC Earth GIF" class="generated-gif"/>
         </div>
         <div th:if="${gif == null}">
             <p>No GIF available for the selected date.</p>
