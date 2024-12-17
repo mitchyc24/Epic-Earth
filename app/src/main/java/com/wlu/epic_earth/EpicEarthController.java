@@ -11,29 +11,23 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.madgag.gif.fmsware.AnimatedGifEncoder;
+
 import com.wlu.epic_earth.nasa.EpicGif;
 import com.wlu.epic_earth.nasa.EpicGifDao;
 import com.wlu.epic_earth.nasa.EpicImage;
 import com.wlu.epic_earth.nasa.EpicImageDao;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
-import java.io.IOException;
-import java.text.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.awt.image.BufferedImage;
-import java.io.ByteArrayOutputStream;
-import com.madgag.gif.fmsware.AnimatedGifEncoder;
-
-
-
-
 
 
 @Controller
@@ -90,43 +84,6 @@ public class EpicEarthController {
         }
     }
 
-    
-@GetMapping("/generate-gif")
-public ResponseEntity<byte[]> generateGif(@RequestParam String date) {
-    try {
-        Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-        List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(parsedDate);
-
-        if (epicImages.isEmpty()) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-        }
-
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
-        gifEncoder.start(baos);
-        gifEncoder.setRepeat(0); // Loop indefinitely
-        gifEncoder.setDelay(50); // 50ms delay between frames
-
-        for (EpicImage epicImage : epicImages) {
-            gifEncoder.addFrame(epicImage.getImage());
-        }
-
-        gifEncoder.finish();
-
-        byte[] gifBytes = baos.toByteArray();
-
-        EpicGif epicGif = new EpicGif(parsedDate, gifBytes);
-        epicGifDao.saveEpicGif(epicGif);
-
-        return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_GIF)
-                .body(gifBytes);
-
-    } catch (ParseException e) {
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
-    }
-}
-
     @GetMapping("/gif")
     public String gif(@RequestParam(required = false) String date, Model model) {
         if (date == null) {
@@ -135,13 +92,34 @@ public ResponseEntity<byte[]> generateGif(@RequestParam String date) {
         }
         try {
             Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
-            List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(parsedDate);
-            logger.info("Found " + epicImages.size() + " images for date " + date);
-            model.addAttribute("images", epicImages);
+            EpicGif epicGif = epicGifDao.getEpicGifByDate(parsedDate);
+            if (epicGif == null) {
+                model.addAttribute("error", "No GIF found for the given date");
+                return "index";
+            }
+            model.addAttribute("gif", epicGif);
+            model.addAttribute("date", date); 
         } catch (ParseException e) {
             model.addAttribute("error", "Invalid date format");
         }
         return "gif";
+    }
+
+    @GetMapping("/gif/{date}")
+    public ResponseEntity<byte[]> getGif(@PathVariable String date) {
+        try {
+            Date parsedDate = new SimpleDateFormat("yyyy-MM-dd").parse(date);
+            EpicGif epicGif = epicGifDao.getEpicGifByDate(parsedDate);
+            if (epicGif != null && epicGif.getData() != null) {
+                return ResponseEntity.ok()
+                        .contentType(MediaType.IMAGE_GIF)
+                        .body(epicGif.getData());
+            } else {
+                return ResponseEntity.notFound().build();
+            }
+        } catch (ParseException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).build();
+        }
     }
 
     @GetMapping("/about")

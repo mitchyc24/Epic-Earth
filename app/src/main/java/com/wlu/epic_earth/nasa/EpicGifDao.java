@@ -5,9 +5,16 @@ import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.util.Date;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
+
+import com.madgag.gif.fmsware.AnimatedGifEncoder;
+import java.io.ByteArrayOutputStream;
+
 
 @Repository
 public class EpicGifDao {
@@ -15,6 +22,9 @@ public class EpicGifDao {
     private static final String DB_URL = "jdbc:h2:file:./data/epic-earth";
     private static final String DB_USER = "sa";
     private static final String DB_PASSWORD = "password";
+
+    @Autowired
+    private EpicImageDao epicImageDao;
 
     public void saveEpicGif(EpicGif gif) {
         try (Connection conn = DriverManager.getConnection(DB_URL, DB_USER, DB_PASSWORD)) {
@@ -45,6 +55,42 @@ public class EpicGifDao {
         } catch (Exception e) {
             logger.log(Level.SEVERE, "Error fetching EpicGif from database", e);
         }
+
+        if (gif == null) {
+            gif = generateAndSaveGif(date);
+        }
+
         return gif;
+    }
+
+    private EpicGif generateAndSaveGif(Date date) {
+        List<EpicImage> epicImages = epicImageDao.getEpicImagesByDate(date);
+        if (epicImages.isEmpty()) {
+            logger.log(Level.WARNING, "No images found for date " + date);
+            return null;
+        }
+
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            AnimatedGifEncoder gifEncoder = new AnimatedGifEncoder();
+            gifEncoder.start(baos);
+            gifEncoder.setRepeat(0); // Loop indefinitely
+            gifEncoder.setDelay(500); // ms delay between frames
+
+            for (EpicImage epicImage : epicImages) {
+                gifEncoder.addFrame(epicImage.getImage());
+            }
+
+            gifEncoder.finish();
+
+            byte[] gifBytes = baos.toByteArray();
+            EpicGif epicGif = new EpicGif(date, gifBytes);
+            saveEpicGif(epicGif);
+
+            return epicGif;
+        } catch (Exception e) {
+            logger.log(Level.SEVERE, "Error generating GIF for date " + date, e);
+            return null;
+        }
     }
 }
