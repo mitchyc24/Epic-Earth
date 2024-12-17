@@ -10,8 +10,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.madgag.gif.fmsware.AnimatedGifEncoder;
-
 import com.wlu.epic_earth.nasa.EpicGif;
 import com.wlu.epic_earth.nasa.EpicGifDao;
 import com.wlu.epic_earth.nasa.EpicImage;
