@@ -5,13 +5,12 @@ CREATE TABLE EPICIMAGE (
     name VARCHAR(255) NOT NULL,
     version VARCHAR(255),
     date TIMESTAMP NOT NULL,
-    url VARCHAR(255),
-    image BLOB NOT NULL
+    imageurl VARCHAR(255),
+    image BLOB NOT NULL,
+    thumbnailurl VARCHAR(255)
 );
 
-CREATE TABLE GIF (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    date DATE NOT NULL,
-    data BLOB NOT NULL
+CREATE TABLE EPICGIF (
+    date DATE PRIMARY KEY,
+    data BLOB
 );

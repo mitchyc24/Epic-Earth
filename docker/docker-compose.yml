@@ -1,0 +1,7 @@
+services:
+  epic-earth:
+    build:
+      context: ../
+      dockerfile: docker/Dockerfile
+    ports:
+      - "8080:8080"

@@ -11,7 +11,7 @@
 	<groupId>com.wlu</groupId>
 	<artifactId>epic-earth</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 	<name>epic-earth</name>
 	<description>A Spring Boot application for viewing and retrieving gifs of Earth</description>
 	<url/>
@@ -83,6 +83,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<mainClass>com.wlu.epic_earth.EpicEarthApplication</mainClass>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
